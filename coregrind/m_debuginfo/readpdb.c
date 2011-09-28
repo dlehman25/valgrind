@@ -147,18 +147,18 @@ typedef struct _IMAGE_DOS_HEADER {
 #define IMAGE_SUBSYSTEM_POSIX_CUI   7
 
 typedef struct _IMAGE_FILE_HEADER {
-  unsigned short  Machine;
-  unsigned short  NumberOfSections;
-  unsigned long   TimeDateStamp;
-  unsigned long   PointerToSymbolTable;
-  unsigned long   NumberOfSymbols;
-  unsigned short  SizeOfOptionalHeader;
-  unsigned short  Characteristics;
+  WORD  Machine;
+  WORD  NumberOfSections;
+  DWORD TimeDateStamp;
+  DWORD PointerToSymbolTable;
+  DWORD NumberOfSymbols;
+  WORD  SizeOfOptionalHeader;
+  WORD  Characteristics;
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 
 typedef struct _IMAGE_DATA_DIRECTORY {
-  unsigned long VirtualAddress;
-  unsigned long Size;
+  DWORD VirtualAddress;
+  DWORD Size;
 } IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
