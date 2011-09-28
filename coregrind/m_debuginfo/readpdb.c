@@ -167,45 +167,45 @@ typedef struct _IMAGE_OPTIONAL_HEADER {
 
   /* Standard fields */
 
-  unsigned short Magic; /* 0x10b or 0x107 */ /* 0x00 */
-  unsigned char  MajorLinkerVersion;
-  unsigned char  MinorLinkerVersion;
-  unsigned long  SizeOfCode;
-  unsigned long  SizeOfInitializedData;
-  unsigned long  SizeOfUninitializedData;
-  unsigned long  AddressOfEntryPoint;        /* 0x10 */
-  unsigned long  BaseOfCode;
-  unsigned long  BaseOfData;
+  WORD   Magic; /* 0x10b or 0x107 */ /* 0x00 */
+  BYTE   MajorLinkerVersion;
+  BYTE   MinorLinkerVersion;
+  DWORD  SizeOfCode;
+  DWORD  SizeOfInitializedData;
+  DWORD  SizeOfUninitializedData;
+  DWORD  AddressOfEntryPoint;        /* 0x10 */
+  DWORD  BaseOfCode;
+  DWORD  BaseOfData;
 
   /* NT additional fields */
 
-  unsigned long ImageBase;
-  unsigned long SectionAlignment;            /* 0x20 */
-  unsigned long FileAlignment;
-  unsigned short MajorOperatingSystemVersion;
-  unsigned short MinorOperatingSystemVersion;
-  unsigned short MajorImageVersion;
-  unsigned short MinorImageVersion;
-  unsigned short MajorSubsystemVersion;      /* 0x30 */
-  unsigned short MinorSubsystemVersion;
-  unsigned long Win32VersionValue;
-  unsigned long SizeOfImage;
-  unsigned long SizeOfHeaders;
-  unsigned long CheckSum;                    /* 0x40 */
-  unsigned short Subsystem;
-  unsigned short DllCharacteristics;
-  unsigned long SizeOfStackReserve;
-  unsigned long SizeOfStackCommit;
-  unsigned long SizeOfHeapReserve;           /* 0x50 */
-  unsigned long SizeOfHeapCommit;
-  unsigned long LoaderFlags;
-  unsigned long NumberOfRvaAndSizes;
+  DWORD ImageBase;
+  DWORD SectionAlignment;            /* 0x20 */
+  DWORD FileAlignment;
+  WORD  MajorOperatingSystemVersion;
+  WORD  MinorOperatingSystemVersion;
+  WORD  MajorImageVersion;
+  WORD  MinorImageVersion;
+  WORD  MajorSubsystemVersion;      /* 0x30 */
+  WORD  MinorSubsystemVersion;
+  DWORD Win32VersionValue;
+  DWORD SizeOfImage;
+  DWORD SizeOfHeaders;
+  DWORD CheckSum;                    /* 0x40 */
+  WORD  Subsystem;
+  WORD  DllCharacteristics;
+  DWORD SizeOfStackReserve;
+  DWORD SizeOfStackCommit;
+  DWORD SizeOfHeapReserve;           /* 0x50 */
+  DWORD SizeOfHeapCommit;
+  DWORD LoaderFlags;
+  DWORD NumberOfRvaAndSizes;
   IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; /* 0x60 */
   /* 0xE0 */
 } IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;
 
 typedef struct _IMAGE_NT_HEADERS {
-  unsigned long Signature; /* "PE"\0\0 */       /* 0x00 */
+  DWORD Signature; /* "PE"\0\0 */       /* 0x00 */
   IMAGE_FILE_HEADER FileHeader;                 /* 0x04 */
   IMAGE_OPTIONAL_HEADER OptionalHeader;         /* 0x18 */
 } IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;
@@ -213,19 +213,19 @@ typedef struct _IMAGE_NT_HEADERS {
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
 typedef struct _IMAGE_SECTION_HEADER {
-  unsigned char Name[IMAGE_SIZEOF_SHORT_NAME];
+  BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
   union {
-    unsigned long PhysicalAddress;
-    unsigned long VirtualSize;
+    DWORD PhysicalAddress;
+    DWORD VirtualSize;
   } Misc;
-  unsigned long VirtualAddress;
-  unsigned long SizeOfRawData;
-  unsigned long PointerToRawData;
-  unsigned long PointerToRelocations;
-  unsigned long PointerToLinenumbers;
-  unsigned short NumberOfRelocations;
-  unsigned short NumberOfLinenumbers;
-  unsigned long Characteristics;
+  DWORD VirtualAddress;
+  DWORD SizeOfRawData;
+  DWORD PointerToRawData;
+  DWORD PointerToRelocations;
+  DWORD PointerToLinenumbers;
+  WORD  NumberOfRelocations;
+  WORD  NumberOfLinenumbers;
+  DWORD Characteristics;
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 
 #define	IMAGE_SIZEOF_SECTION_HEADER 40
@@ -2319,7 +2319,7 @@ Bool ML_(read_pdb_debug_info)(
          VG_(memcpy)(name, pe_sechdr_avma->Name, 8);
          name[8] = '\0';
          VG_(umsg)("LOAD_PDB_DEBUGINFO:"
-                   "   Scanning PE section %ps at avma %#lx svma %#lx\n",
+                   "   Scanning PE section %ps at avma %#lx svma %#x\n",
                    name, obj_avma + pe_sechdr_avma->VirtualAddress,
                    pe_sechdr_avma->VirtualAddress);
       }
