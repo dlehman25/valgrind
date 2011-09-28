@@ -350,9 +350,8 @@ typedef struct _GUID  /* 16 bytes */
 #pragma pack(1)
 typedef struct _PDB_FILE
 {
-    unsigned long size;
-    unsigned long unknown;
-
+    DWORD size;
+    DWORD unknown;
 } PDB_FILE, *PPDB_FILE;
 
 // A .pdb file begins with a variable-length one-line text string
@@ -363,190 +362,179 @@ struct PDB_JG_HEADER
 {
     //char ident[40];  // "Microsoft C/C++ program database 2.00\r\n\032"
     //unsigned long  signature;  // "JG\0\0"
-    unsigned int   blocksize;  // 0x400 typical; also 0x800, 0x1000
-    unsigned short freelist;
-    unsigned short total_alloc;
+    DWORD    blocksize;  // 0x400 typical; also 0x800, 0x1000
+    WORD     freelist;
+    WORD     total_alloc;
     PDB_FILE toc;
-    unsigned short toc_block[ 1 ];
+    WORD     toc_block[ 1 ];
 };
 
 struct PDB_DS_HEADER
 {
     //char   signature[32];  // "Microsoft C/C++ MSF 7.00\r\n\032DS\0\0"
-    unsigned int  block_size;
-    unsigned int unknown1;
-    unsigned int num_pages;
-    unsigned int toc_size;
-    unsigned int unknown2;
-    unsigned int toc_page;
+    DWORD block_size;
+    DWORD unknown1;
+    DWORD num_pages;
+    DWORD toc_size;
+    DWORD unknown2;
+    DWORD toc_page;
 };
 
 struct PDB_JG_TOC
 {
-    unsigned int  nFiles;
+    DWORD    nFiles;
     PDB_FILE file[ 1 ];
-
 };
 
 struct PDB_DS_TOC
 {
-    unsigned int num_files;
-    unsigned int file_size[1];
+    DWORD num_files;
+    DWORD file_size[1];
 };
 
 struct PDB_JG_ROOT
 {
-    unsigned int  version;
-    unsigned int  TimeDateStamp;
-    unsigned int  age;
-    unsigned int  cbNames;
-    char names[ 1 ];
+    DWORD  version;
+    DWORD  TimeDateStamp;
+    DWORD  age;
+    DWORD  cbNames;
+    char   names[ 1 ];
 };
 
 struct PDB_DS_ROOT
 {
-    unsigned int version;
-    unsigned int TimeDateStamp;
-    unsigned int age;
-    GUID guid;
-    unsigned int cbNames;
-    char names[1];
+    DWORD version;
+    DWORD TimeDateStamp;
+    DWORD age;
+    GUID  guid;
+    DWORD cbNames;
+    char  names[1];
 };
 
 typedef struct _PDB_TYPES_OLD
 {
-    unsigned long  version;
-    unsigned short first_index;
-    unsigned short last_index;
-    unsigned long  type_size;
-    unsigned short file;
-    unsigned short pad;
-
+    DWORD   version;
+    WORD    first_index;
+    WORD    last_index;
+    DWORD   type_size;
+    WORD    file;
+    WORD    pad;
 } PDB_TYPES_OLD, *PPDB_TYPES_OLD;
 
 typedef struct _PDB_TYPES
 {
-    unsigned long  version;
-    unsigned long  type_offset;
-    unsigned long  first_index;
-    unsigned long  last_index;
-    unsigned long  type_size;
-    unsigned short file;
-    unsigned short pad;
-    unsigned long  hash_size;
-    unsigned long  hash_base;
-    unsigned long  hash_offset;
-    unsigned long  hash_len;
-    unsigned long  search_offset;
-    unsigned long  search_len;
-    unsigned long  unknown_offset;
-    unsigned long  unknown_len;
-
+    DWORD   version;
+    DWORD   type_offset;
+    DWORD   first_index;
+    DWORD   last_index;
+    DWORD   type_size;
+    WORD    file;
+    WORD    pad;
+    DWORD   hash_size;
+    DWORD   hash_base;
+    DWORD   hash_offset;
+    DWORD   hash_len;
+    DWORD   search_offset;
+    DWORD   search_len;
+    DWORD   unknown_offset;
+    DWORD   unknown_len;
 } PDB_TYPES, *PPDB_TYPES;
 
 typedef struct _PDB_SYMBOL_RANGE
 {
-    unsigned short segment;
-    unsigned short pad1;
-    unsigned long  offset;
-    unsigned long  size;
-    unsigned long  characteristics;
-    unsigned short index;
-    unsigned short pad2;
-
+    WORD    segment;
+    WORD    pad1;
+    DWORD   offset;
+    DWORD   size;
+    DWORD   characteristics;
+    WORD    index;
+    WORD    pad2;
 } PDB_SYMBOL_RANGE, *PPDB_SYMBOL_RANGE;
 
 typedef struct _PDB_SYMBOL_RANGE_EX
 {
-    unsigned short segment;
-    unsigned short pad1;
-    unsigned long  offset;
-    unsigned long  size;
-    unsigned long  characteristics;
-    unsigned short index;
-    unsigned short pad2;
-    unsigned long  timestamp;
-    unsigned long  unknown;
-
+    WORD    segment;
+    WORD    pad1;
+    DWORD   offset;
+    DWORD   size;
+    DWORD   characteristics;
+    WORD    index;
+    WORD    pad2;
+    DWORD   timestamp;
+    DWORD   unknown;
 } PDB_SYMBOL_RANGE_EX, *PPDB_SYMBOL_RANGE_EX;
 
 typedef struct _PDB_SYMBOL_FILE
 {
-    unsigned long  unknown1;
+    DWORD   unknown1;
     PDB_SYMBOL_RANGE range;
-    unsigned short flag;
-    unsigned short file;
-    unsigned long  symbol_size;
-    unsigned long  lineno_size;
-    unsigned long  unknown2;
-    unsigned long  nSrcFiles;
-    unsigned long  attribute;
-    char filename[ 1 ];
-
+    WORD    flag;
+    WORD    file;
+    DWORD   symbol_size;
+    DWORD   lineno_size;
+    DWORD   unknown2;
+    DWORD   nSrcFiles;
+    DWORD   attribute;
+    char    filename[ 1 ];
 } PDB_SYMBOL_FILE, *PPDB_SYMBOL_FILE;
 
 typedef struct _PDB_SYMBOL_FILE_EX
 {
-    unsigned long  unknown1;
+    DWORD   unknown1;
     PDB_SYMBOL_RANGE_EX range;
-    unsigned short flag;
-    unsigned short file;
-    unsigned long  symbol_size;
-    unsigned long  lineno_size;
-    unsigned long  unknown2;
-    unsigned long  nSrcFiles;
-    unsigned long  attribute;
-    unsigned long  reserved[ 2 ];
-    char filename[ 1 ];
-
+    WORD    flag;
+    WORD    file;
+    DWORD   symbol_size;
+    DWORD   lineno_size;
+    DWORD   unknown2;
+    DWORD   nSrcFiles;
+    DWORD   attribute;
+    DWORD   reserved[ 2 ];
+    char    filename[ 1 ];
 } PDB_SYMBOL_FILE_EX, *PPDB_SYMBOL_FILE_EX;
 
 typedef struct _PDB_SYMBOL_SOURCE
 {
-    unsigned short nModules;
-    unsigned short nSrcFiles;
-    unsigned short table[ 1 ];
-
+    WORD nModules;
+    WORD nSrcFiles;
+    WORD table[ 1 ];
 } PDB_SYMBOL_SOURCE, *PPDB_SYMBOL_SOURCE;
 
 typedef struct _PDB_SYMBOL_IMPORT
 {
-    unsigned long unknown1;
-    unsigned long unknown2;
-    unsigned long TimeDateStamp;
-    unsigned long nRequests;
-    char filename[ 1 ];
-
+    DWORD unknown1;
+    DWORD unknown2;
+    DWORD TimeDateStamp;
+    DWORD nRequests;
+    char  filename[ 1 ];
 } PDB_SYMBOL_IMPORT, *PPDB_SYMBOL_IMPORT;
 
 typedef struct _PDB_SYMBOLS_OLD
 {
-    unsigned short hash1_file;
-    unsigned short hash2_file;
-    unsigned short gsym_file;
-    unsigned short pad;
-    unsigned long  module_size;
-    unsigned long  offset_size;
-    unsigned long  hash_size;
-    unsigned long  srcmodule_size;
-
+    WORD hash1_file;
+    WORD hash2_file;
+    WORD gsym_file;
+    WORD pad;
+    DWORD  module_size;
+    DWORD  offset_size;
+    DWORD  hash_size;
+    DWORD  srcmodule_size;
 } PDB_SYMBOLS_OLD, *PPDB_SYMBOLS_OLD;
 
 typedef struct _PDB_SYMBOLS
 {
-    unsigned long  signature;
-    unsigned long  version;
-    unsigned long  unknown;
-    unsigned long  hash1_file;
-    unsigned long  hash2_file;
-    unsigned long  gsym_file;
-    unsigned long  module_size;
-    unsigned long  offset_size;
-    unsigned long  hash_size;
-    unsigned long  srcmodule_size;
-    unsigned long  pdbimport_size;
-    unsigned long  resvd[ 5 ];
-
+    DWORD  signature;
+    DWORD  version;
+    DWORD  unknown;
+    DWORD  hash1_file;
+    DWORD  hash2_file;
+    DWORD  gsym_file;
+    DWORD  module_size;
+    DWORD  offset_size;
+    DWORD  hash_size;
+    DWORD  srcmodule_size;
+    DWORD  pdbimport_size;
+    DWORD  resvd[ 5 ];
 } PDB_SYMBOLS, *PPDB_SYMBOLS;
 #pragma pack()
 
@@ -2161,7 +2149,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
       default:
          if (VG_(clo_verbosity) > 1)
             VG_(umsg)("LOAD_PDB_DEBUGINFO: "
-                      "Unknown .pdb type info version %lu\n", types.version );
+                      "Unknown .pdb type info version %u\n", types.version );
    }
 
    header_size = 0;
@@ -2175,7 +2163,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
       default:
          if (VG_(clo_verbosity) > 1)
             VG_(umsg)("LOAD_PDB_DEBUGINFO: "
-                      "Unknown .pdb symbol info version %lu\n",
+                      "Unknown .pdb symbol info version %u\n",
                       symbols.version );
    }
 
