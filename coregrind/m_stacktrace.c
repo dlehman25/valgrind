@@ -636,6 +636,22 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
          continue;
       }
 
+#ifdef VGA_amd64
+      /* Try to derive a new (ip,sp,fp) triple from the current set. */
+      /* And, similarly, try for MSVC x64 unwind info. */
+      if ( VG_(use_MSVC_x64_info)( &uregs, fp_min, fp_max ) ) {
+         if (0 == uregs.xip || 1 == uregs.xip) break;
+         if (sps) sps[i] = uregs.xsp;
+         if (fps) fps[i] = uregs.xbp;
+         ips[i++] = uregs.xip - 1;
+         if (debug)
+            VG_(printf)("     ipsC[%d]=0x%08lx\n", i-1, ips[i-1]);
+         uregs.xip = uregs.xip - 1; /* as per comment at the head of this loop */
+         RECURSIVE_MERGE(cmrf,ips,i);
+         continue;
+      }
+#endif
+
       /* If VG_(use_CF_info) fails, it won't modify ip/sp/fp, so
          we can safely try the old-fashioned method. */
       /* This bit is supposed to deal with frames resulting from

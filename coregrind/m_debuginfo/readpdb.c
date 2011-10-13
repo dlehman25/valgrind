@@ -333,6 +333,22 @@ typedef struct _IMAGE_SECTION_HEADER {
 #define IMAGE_SCN_MEM_READ			0x40000000
 #define IMAGE_SCN_MEM_WRITE			0x80000000
 
+#define IMAGE_DIRECTORY_ENTRY_EXPORT            0
+#define IMAGE_DIRECTORY_ENTRY_IMPORT            1
+#define IMAGE_DIRECTORY_ENTRY_RESOURCE          2
+#define IMAGE_DIRECTORY_ENTRY_EXCEPTION         3
+#define IMAGE_DIRECTORY_ENTRY_SECURITY          4
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC         5
+#define IMAGE_DIRECTORY_ENTRY_DEBUG             6
+#define IMAGE_DIRECTORY_ENTRY_COPYRIGHT         7
+#define IMAGE_DIRECTORY_ENTRY_GLOBALPTR         8
+#define IMAGE_DIRECTORY_ENTRY_TLS               9
+#define IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG       10
+#define IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT      11
+#define IMAGE_DIRECTORY_ENTRY_IAT               12  /* Import Address Table */
+#define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT      13
+#define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR    14
+
 #pragma pack()
 
 typedef struct _GUID  /* 16 bytes */
@@ -2313,6 +2329,8 @@ Bool ML_(read_pdb_debug_info)(
    IMAGE_NT_HEADERS*     ntheaders_avma;
    IMAGE_SECTION_HEADER* sectp_avma;
    IMAGE_SECTION_HEADER* pe_sechdr_avma;
+   IMAGE_OPTIONAL_HEADER* opthdr_avma;
+   IMAGE_DATA_DIRECTORY*  datadir;
 
    if (VG_(clo_verbosity) > 1)
        VG_(umsg)("LOAD_PDB_DEBUGINFO: Processing PDB file %s\n", pdbname );
@@ -2338,6 +2356,8 @@ Bool ML_(read_pdb_debug_info)(
            + OFFSET_OF(IMAGE_NT_HEADERS, OptionalHeader)
            + ntheaders_avma->FileHeader.SizeOfOptionalHeader
         );
+
+   opthdr_avma = &ntheaders_avma->OptionalHeader;
 
    /* JRS: this seems like something of a hack. */
    di->soname = ML_(dinfo_strdup)("di.readpdb.rpdi.1", pdbname);
@@ -2487,6 +2507,15 @@ Bool ML_(read_pdb_debug_info)(
       pdb_dump( &reader, di, obj_avma, obj_bias, sectp_avma );
       if (root) {
          ML_(dinfo_free)( root );
+      }
+      /* read RUNTIME_FUNCTION information for x64 */
+      /* i don't think this would apply to obsolete JG file format */
+      datadir = opthdr_avma->DataDirectory;
+      if (datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress)
+      {
+        di->rtf      = (RUNTIME_FUNCTION *)(obj_avma + datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress);
+        di->rtf_size = datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].Size;
+        di->rtf_used = di->rtf_size / sizeof(*di->rtf);
       }
    }
    else
