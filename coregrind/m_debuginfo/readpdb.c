@@ -2510,6 +2510,9 @@ Bool ML_(read_pdb_debug_info)(
                    "acquired info ------\n");
       /* prepare read data for use */
       ML_(canonicaliseTables)( di );
+
+      di->first_epoch = VG_(current_DiEpoch)();
+
       /* notify m_redir about it */
       TRACE_SYMTAB("\n------ Notifying m_redir ------\n");
       VG_(redir_notify_new_DebugInfo)( di );
