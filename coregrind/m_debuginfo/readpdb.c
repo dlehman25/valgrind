@@ -1197,7 +1197,7 @@ static void pdb_convert_types_header( PDB_TYPES *types, char* image )
    VG_(memset)( types, 0, sizeof(PDB_TYPES) );
    if ( !image )
       return;
-   if ( *(unsigned long *)image < 19960000 ) {  /* FIXME: correct version? */
+   if ( *(DWORD *)image < 19960000 ) {  /* FIXME: correct version? */
       /* Old version of the types record header */
       PDB_TYPES_OLD *old = (PDB_TYPES_OLD *)image;
       types->version     = old->version;
@@ -1219,7 +1219,7 @@ static void pdb_convert_symbols_header( PDB_SYMBOLS *symbols,
    VG_(memset)( symbols, 0, sizeof(PDB_SYMBOLS) );
    if ( !image )
       return;
-   if ( *(unsigned long *)image != 0xffffffff ) {
+   if ( *(DWORD*)image != 0xffffffff ) {
       /* Old version of the symbols record header */
       PDB_SYMBOLS_OLD *old     = (PDB_SYMBOLS_OLD *)image;
       symbols->version         = 0;
@@ -2081,7 +2081,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
          di->fpo[i].ulOffStart += pe_avma;
          // make sure the biasing didn't royally screw up, by wrapping
          // the range around the end of the address space
-         vg_assert(0xFFFFFFFF - di->fpo[i].ulOffStart /* "remaining space" */
+         vg_assert(~0ul - di->fpo[i].ulOffStart /* "remaining space" */
                    >= di->fpo[i].cbProcSize);
       }
 
@@ -2224,7 +2224,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
                                         file_name );
             n_syms_read 
                += DEBUG_SnarfCodeView( di, pe_avma, sectp_avma, modimage,
-                                           sizeof(unsigned long),
+                                           sizeof(DWORD),
                                            symbol_size );
          }
 
