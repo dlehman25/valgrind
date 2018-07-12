@@ -1165,7 +1165,9 @@ void pdb_check_root_version_and_timestamp( const HChar* pdbname,
       case 19950814:
       case 19960307:      /* VC 5.0 */
       case 19970604:      /* VC 6.0 */
-      case 20000404:      /* VC 7.0  FIXME?? */
+      case 19990903:      /* VC 7.0 */
+      case 20000404:
+      case 20040203:      /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
@@ -2144,7 +2146,8 @@ static void pdb_dump( const struct pdb_reader* pdb,
       case 19950410:      /* VC 4.0 */
       case 19951122:
       case 19961031:      /* VC 5.0 / 6.0 */
-      case 20040203:      /* VC 7.0  FIXME??  */
+      case 19990903:      /* VC 7.0 */
+      case 20040203:      /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
@@ -2158,7 +2161,8 @@ static void pdb_dump( const struct pdb_reader* pdb,
       case 0:            /* VC 4.0 */
       case 19960307:     /* VC 5.0 */
       case 19970606:     /* VC 6.0 */
-      case 19990903:     /* VC 7.0  FIXME?? */
+      case 19990903:     /* VC 7.0 */
+      case 20040203:     /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
