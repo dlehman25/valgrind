@@ -1708,11 +1708,12 @@ static ULong DEBUG_SnarfLinetab(
     return n_lines_read;
 }
 
-
+#define LT2_LINES_BLOCK     0x000000f2
+#define LT2_FILES_BLOCK     0x000000f4
 
 /* there's a new line tab structure from MS Studio 2005 and after
  * it's made of:
- * DWORD        000000f4
+ * DWORD        LT2_FILES_BLOCK
  * DWORD        lineblk_offset (counting bytes after this field)
  * an array of codeview_linetab2_file structures
  * an array (starting at <lineblk_offset>) of codeview_linetab2_block structures
@@ -1730,7 +1731,7 @@ typedef struct codeview_linetab2_file
 
 typedef struct codeview_linetab2_block
 {
-    DWORD       header;         /* 0x000000f2 */
+    DWORD       header;         /* LT2_LINES_BLOCK */
     DWORD       size_of_block;  /* next block is at # bytes after this field */
     DWORD       start;          /* start address of function with line numbers */
     DWORD       seg;            /* segment of function with line numbers */
@@ -1766,7 +1767,7 @@ static ULong codeview_dump_linetab2(
    Bool  debug = di->trace_symtab;
    ULong n_line2s_read = 0;
 
-   if (*(const DWORD*)linetab != 0x000000f4)
+   if (*(const DWORD*)linetab != LT2_FILES_BLOCK)
       return 0;
    offset = *((const DWORD*)linetab + 1);
    lbh = (const codeview_linetab2_block*)(linetab + 8 + offset);
@@ -1775,7 +1776,7 @@ static ULong codeview_dump_linetab2(
 
       UInt filedirname_ix;
       Addr svma_s, svma_e;
-      if (lbh->header != 0x000000f2) {
+      if (lbh->header != LT2_LINES_BLOCK) {
          /* FIXME: should also check that whole lbh fits in linetab + size */
          if (debug)
             VG_(printf)("%sblock end %x\n", pfx, lbh->header);
