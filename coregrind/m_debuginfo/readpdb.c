@@ -1759,23 +1759,43 @@ static ULong codeview_dump_linetab2(
                 const HChar* pfx
              )
 {
-   DWORD       offset;
    unsigned    i;
    const codeview_linetab2_block* lbh;
    const codeview_linetab2_file* fd;
+   const char *files;
 
    Bool  debug = di->trace_symtab;
    ULong n_line2s_read = 0;
 
-   if (*(const DWORD*)linetab != LT2_FILES_BLOCK)
-      return 0;
-   offset = *((const DWORD*)linetab + 1);
-   lbh = (const codeview_linetab2_block*)(linetab + 8 + offset);
+   files = NULL;
+   lbh = (const codeview_linetab2_block*)(linetab);
+   while ((const HChar*)lbh < linetab + size) {
+      if (lbh->header == LT2_FILES_BLOCK)
+      {
+         files = (const char *)lbh;
+         break;
+      }
+      lbh = (const codeview_linetab2_block*)
+                ((const char*)lbh + 8 + lbh->size_of_block);
+   }
 
+   if (!files) {
+      if (debug)
+         VG_(printf)("No LT2_FILES_BLOCK found\n");
+      return 0;
+   }
+
+   lbh = (const codeview_linetab2_block*)linetab;
    while ((const HChar*)lbh < linetab + size) {
 
       UInt filedirname_ix;
       Addr svma_s, svma_e;
+      if (lbh->header == LT2_FILES_BLOCK) {
+         lbh = (const codeview_linetab2_block*)
+               ((const char*)lbh + 8 + lbh->size_of_block);
+         continue;
+      }
+
       if (lbh->header != LT2_LINES_BLOCK) {
          /* FIXME: should also check that whole lbh fits in linetab + size */
          if (debug)
@@ -1786,7 +1806,7 @@ static ULong codeview_dump_linetab2(
          VG_(printf)("%sblock from %04x:%08x-%08x (size %u) (%u lines)\n",
                      pfx, lbh->seg, lbh->start, lbh->start + lbh->size - 1,
                      lbh->size, lbh->nlines);
-      fd = (const codeview_linetab2_file*)(linetab + 8 + lbh->file_offset);
+      fd = (const codeview_linetab2_file*)(files + 8 + lbh->file_offset);
       if (debug)
          VG_(printf)(
             "%s  md5=%02x%02x%02x%02x%02x%02x%02x%02x"
