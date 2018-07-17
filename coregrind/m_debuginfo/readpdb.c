@@ -552,7 +552,6 @@ typedef struct _PDB_SYMBOLS
     DWORD  pdbimport_size;
     DWORD  resvd[ 5 ];
 } PDB_SYMBOLS, *PPDB_SYMBOLS;
-#pragma pack()
 
 /*========================================================================
  * Process CodeView symbol information.
@@ -918,6 +917,7 @@ union codeview_symbol
         unsigned short          segment;
     } ssearch_v1;
 };
+#pragma pack()
 
 #define S_COMPILAND_V1  0x0001
 #define S_REGISTER_V1   0x0002
