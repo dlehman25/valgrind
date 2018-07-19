@@ -1372,7 +1372,7 @@ static ULong DEBUG_SnarfCodeView(
       /* not completely sure of those two anyway */
       case S_PUB_FUNC1_V3:
       case S_PUB_FUNC2_V3: {
-         Int k = sym->public_v3.len - (-1+ sizeof(sym->public_v3));
+         Int k = VG_(strlen)(sym->public_v3.name);
          if ((-1+ sizeof(symname)) < k)
             k = -1+ sizeof(symname);
          VG_(memcpy)(symname, sym->public_v3.name, k);
