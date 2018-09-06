@@ -1394,7 +1394,7 @@ static ULong DEBUG_SnarfCodeView(
                              // FIXME: public_v3.len is not length of the
                              // .text of the function
             vsym.isText    = !!(IMAGE_SCN_CNT_CODE
-                                & sectp[sym->data_v2.segment-1].Characteristics);
+                                & sectp[sym->public_v3.segment-1].Characteristics);
             vsym.isIFunc   = False;
             vsym.isGlobal  = True;
             ML_(addSym)( di, &vsym );
