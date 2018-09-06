@@ -1369,9 +1369,7 @@ static ULong DEBUG_SnarfCodeView(
          break;
       }
       case S_PUB_V3:
-      /* not completely sure of those two anyway */
-      case S_PUB_FUNC1_V3:
-      case S_PUB_FUNC2_V3: {
+      {
          Int k = VG_(strlen)(sym->public_v3.name);
          if ((-1+ sizeof(symname)) < k)
             k = -1+ sizeof(symname);
@@ -1379,29 +1377,32 @@ static ULong DEBUG_SnarfCodeView(
          symname[k] = '\0';
 
          if (debug)
-            VG_(umsg)("  S_PUB_FUNC1_V3/S_PUB_FUNC2_V3/S_PUB_V3 %s\n",
-                      symname );
+            VG_(umsg)("  S_PUB_V3 %s\n", symname );
 
-         if (1  /*sym->generic.id==S_PUB_FUNC1_V3 
-                  || sym->generic.id==S_PUB_FUNC2_V3*/) {
-            nmstr = ML_(addStr)(di, symname, k);
-            vsym.avmas.main = bias + sectp[sym->public_v3.segment-1].VirtualAddress
-                                  + sym->public_v3.offset;
-            SET_TOCPTR_AVMA(vsym.avmas, 0);
-            vsym.pri_name  = nmstr;
-            vsym.sec_names = NULL;
-            vsym.size      = 4000;
-                             // FIXME: public_v3.len is not length of the
-                             // .text of the function
-            vsym.isText    = !!(IMAGE_SCN_CNT_CODE
-                                & sectp[sym->public_v3.segment-1].Characteristics);
-            vsym.isIFunc   = False;
-            vsym.isGlobal  = True;
-            ML_(addSym)( di, &vsym );
-            n_syms_read++;
-         }
+         nmstr = ML_(addStr)(di, symname, k);
+         vsym.avmas.main = bias + sectp[sym->public_v3.segment-1].VirtualAddress
+                                + sym->public_v3.offset;
+         SET_TOCPTR_AVMA(vsym.avmas, 0);
+         vsym.pri_name  = nmstr;
+         vsym.sec_names = NULL;
+         vsym.size      = 4000;
+                          // FIXME: public_v3.len is not length of the
+                          // .text of the function
+         vsym.isText    = !!(IMAGE_SCN_CNT_CODE
+                             & sectp[sym->public_v3.segment-1].Characteristics);
+         vsym.isIFunc   = False;
+         vsym.isGlobal  = True;
+         ML_(addSym)( di, &vsym );
+         n_syms_read++;
          break;
       }
+
+      case S_PUB_FUNC1_V3:
+      case S_PUB_FUNC2_V3:
+         /* these are #if 0'd in Wine */
+         if (debug)
+            VG_(umsg)("  S_PUB_FUNC1_V3/S_PUB_FUNC2_V3 %s\n", symname );
+         break;
 
       /*
        * Sort of like a global function, but it just points
