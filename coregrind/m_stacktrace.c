@@ -500,7 +500,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
 #if defined(VGP_amd64_linux) || defined(VGP_amd64_darwin) \
     || defined(VGP_amd64_solaris)
 
-static Bool MSVC_x64_info_present = True;
+static Bool MSVC_x64_info_present = False;
 static UInt MSVC_x64_generation = 0;
 
 UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
