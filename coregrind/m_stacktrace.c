@@ -501,6 +501,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
     || defined(VGP_amd64_solaris)
 
 static Bool MSVC_x64_info_present = True;
+static UInt MSVC_x64_generation = 0;
 
 UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
                                /*OUT*/Addr* ips, UInt max_n_ips,
@@ -591,6 +592,11 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
       i++;
    }
 #  endif
+
+   if (UNLIKELY (MSVC_x64_generation != VG_(debuginfo_generation)())) {
+      MSVC_x64_generation = VG_(debuginfo_generation)();
+      MSVC_x64_info_present = VG_(MSVC_x64_info_present)();
+   }
        
    /* Loop unwinding the stack. Note that the IP value we get on
     * each pass (whether from CFI info or a stack frame) is a
