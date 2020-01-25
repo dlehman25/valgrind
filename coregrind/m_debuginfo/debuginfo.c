@@ -3567,6 +3567,17 @@ static inline void putIReg( ThreadId tid, ULong idx, ULong val )
     (&vex->guest_RAX)[idx] = val;
 }
 
+Bool VG_(MSVC_x64_info_present)(void)
+{
+   const DebugInfo* di;
+   for (di = debugInfo_list; di != NULL; di = di->next) {
+      if (di->rtf != NULL && di->text_present)
+         return True;
+   }
+   return False;
+}
+
+
 Bool VG_(use_MSVC_x64_info) ( /*MOD*/D3UnwindRegs* uregs,
                               Addr min_accessible,
                               Addr max_accessible )

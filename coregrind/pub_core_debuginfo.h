@@ -164,6 +164,13 @@ extern Bool VG_(use_FPO_info) ( /*MOD*/Addr* ipP,
                                 Addr max_accessible );
 
 #if defined(VGA_amd64)
+/* True if some MSVC x64 information is loaded.
+   It is useless to call VG_(use_MSVC_x64_info) if this returns False.
+   Note that the return value should preferably be cached in
+   the stack unwind code, and re-queried when the debug info generation
+   changes. */
+extern Bool VG_(MSVC_x64_info_present)(void);
+
 /* Use MSVC x64 data to do one step of stack unwinding. */
 extern Bool VG_(use_MSVC_x64_info) ( /*MOD*/D3UnwindRegs* uregs,
                                      Addr min_accessible,
