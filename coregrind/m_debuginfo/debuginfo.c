@@ -3452,6 +3452,229 @@ Bool VG_(use_CF_info) ( /*MOD*/D3UnwindRegs* uregsHere,
 /*--------------------------------------------------------------*/
 /*---                                                        ---*/
 /*--- TOP LEVEL: FOR UNWINDING THE STACK USING               ---*/
+/*---            MSVC RUNTIME_FUNCTION INFO                  ---*/
+/*---                                                        ---*/
+/*--------------------------------------------------------------*/
+
+#if defined(VGA_amd64)
+
+typedef unsigned char  UBYTE;
+typedef unsigned short USHORT;
+typedef union _UNWIND_CODE
+{
+  struct
+  {
+    UBYTE CodeOffset;
+    UBYTE UnwindOp : 4;
+    UBYTE OpInfo   : 4;
+  };
+  USHORT FrameOffset;
+} UNWIND_CODE, *PUNWIND_CODE;
+
+typedef struct _UNWIND_INFO
+{
+  UBYTE Version  : 3;
+  UBYTE Flags    : 5;
+  UBYTE SizeOfProlog;
+  UBYTE CountOfCodes;
+  UBYTE FrameRegister : 4;
+  UBYTE FrameOffset   : 4;
+  UNWIND_CODE UnwindCode[1];
+/*union
+  {
+    OPTIONAL ULONG ExceptionHandler;
+    OPTIONAL ULONG FunctionEntry;
+  };
+  OPTIONAL ULONG ExceptionData[];
+*/
+} UNWIND_INFO, *PUNWIND_INFO;
+
+#define UWOP_PUSH_NONVOL        0
+#define UWOP_ALLOC_LARGE        1
+#define UWOP_ALLOC_SMALL        2
+#define UWOP_SET_FPREG          3
+#define UWOP_SAVE_NONVOL        4
+#define UWOP_SAVE_NONVOL_FAR    5
+#define UWOP_SAVE_XMM128        8
+#define UWOP_SAVE_XMM128_FAR    9
+#define UWOP_PUSH_MACHFRAME     10
+
+#define UNW_FLAG_NHANDLER   0x0
+#define UNW_FLAG_EHANDLER   0x1
+#define UNW_FLAG_UHANDLER   0x2
+#define UNW_FLAG_CHAININFO  0x4
+
+static const RUNTIME_FUNCTION *find_runtime_function(const DebugInfo *di,
+                                                     Addr rip)
+{
+    Word hi, lo, mid;
+    const RUNTIME_FUNCTION *rtf;
+    UInt ripoff = (UInt)(rip - di->fpo_base_avma);
+
+    rtf = di->rtf;
+    lo = 0;
+    hi = di->rtf_used-1;
+    while(1)
+    {
+        if (lo > hi) return NULL;
+
+        mid = (lo + hi) / 2;
+
+        if (ripoff >= rtf[mid].EndAddress)
+            lo = mid + 1;
+        else if (ripoff < rtf[mid].BeginAddress)
+            hi = mid - 1;
+        else
+            return &rtf[mid];
+    }
+}
+
+static int get_code_size(const UNWIND_CODE *ucode)
+{
+    switch(ucode->UnwindOp)
+    {
+        case UWOP_ALLOC_LARGE:
+            return ucode->OpInfo ? 3 : 2;
+        case UWOP_SAVE_NONVOL:
+        case UWOP_SAVE_XMM128:
+            return 2;
+        case UWOP_SAVE_NONVOL_FAR:
+        case UWOP_SAVE_XMM128_FAR:
+            return 3;
+        default:
+            return 1;
+    }
+}
+
+static inline const char *get_reg_name(int reg)
+{
+    static const char * const reg_names[16] =
+        { "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
+          "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15" };
+    vg_assert(reg >= 0 && reg < sizeof(reg_names)/sizeof(reg_names[0]));
+    return reg_names[reg];
+}
+
+static inline ULong getIReg( ThreadId tid, ULong idx )
+{
+    VexGuestArchState* vex = &(VG_(get_ThreadState)(tid)->arch.vex);
+    return (&vex->guest_RAX)[idx];
+}
+
+static inline void putIReg( ThreadId tid, ULong idx, ULong val )
+{
+    VexGuestArchState* vex = &(VG_(get_ThreadState)(tid)->arch.vex);
+    (&vex->guest_RAX)[idx] = val;
+}
+
+Bool VG_(use_MSVC_x64_info) ( /*MOD*/D3UnwindRegs* uregs,
+                              Addr min_accessible,
+                              Addr max_accessible )
+{
+    UWord i;
+    Addr base;
+    DebugInfo* di;
+    UInt prolog_offset;
+    Addr rip, rsp, rbp;
+    UNWIND_INFO *uinfo;
+    UNWIND_CODE *ucode;
+    const RUNTIME_FUNCTION *rtf = NULL;
+
+    rip = uregs->xip;
+    rsp = uregs->xsp;
+    rbp = uregs->xbp;
+
+    for (di = debugInfo_list; di != NULL; di = di->next)
+    {
+        if (!di->rtf) continue;
+        if (!di->text_present) continue;
+
+        if (rip >= di->text_avma &&
+            rip <= di->text_avma + di->text_size)
+        {
+            base = di->fpo_base_avma;
+            rtf = find_runtime_function(di, rip);
+            break;
+        }
+    }
+
+    if (!rtf) return False;
+
+    /* see Wine sources dlls/ntdll/signal_x86_64.c */
+    while(1)
+    {
+        uinfo = (UNWIND_INFO *)(base + rtf->UnwindData);
+
+        if (uinfo->Version != 1)
+        {
+            VG_(printf)("unknown unwind info version %u at %p",
+                        (UInt)uinfo->Version, uinfo);
+            return False;
+        }
+
+        if (rip >= base + rtf->BeginAddress
+            && rip < base + rtf->BeginAddress + uinfo->SizeOfProlog)
+            prolog_offset = rip - base - rtf->BeginAddress;
+        else
+        {
+            prolog_offset = ~0;
+            /* FIXME: check if inside epilog */
+        }
+
+        for (i = 0; i < uinfo->CountOfCodes;
+                    i += get_code_size(&uinfo->UnwindCode[i]) )
+        {
+            ucode = &uinfo->UnwindCode[i];
+
+            if (ucode->CodeOffset > prolog_offset) continue;
+
+            switch (ucode->UnwindOp)
+            {
+                case UWOP_PUSH_NONVOL: /* pushq %reg */
+                    rsp += sizeof(rsp);
+                    break;
+                case UWOP_ALLOC_LARGE: /* subq $nn, %rsp */
+                    if (ucode->OpInfo)
+                        rsp += *(UInt *)&ucode[1];
+                    else
+                        rsp += *(USHORT *)&ucode[1] * 8;
+                    break;
+                case UWOP_ALLOC_SMALL: /* subq $n, %rsp */
+                    rsp += (ucode->OpInfo + 1) * 8;
+                    break;
+                case UWOP_SET_FPREG: /* leaq $nn(%rsp), %framereg */
+                    rsp = rbp - uinfo->FrameOffset * 16; /* TODO FrameRegister */
+                    break;
+                case UWOP_SAVE_NONVOL: /* movq %reg,n(%rsp) */
+                case UWOP_SAVE_NONVOL_FAR: /* movq %reg,nn(%rsp) */
+                case UWOP_SAVE_XMM128: /* movaps %xmmreg,n(%rsp) */
+                case UWOP_SAVE_XMM128_FAR: /* movaps %xmmreg,nn(%rsp) */
+                case UWOP_PUSH_MACHFRAME:
+                    break;
+            }
+        }
+
+        /* if chain, get chained function and repeat */
+        if (!(uinfo->Flags & UNW_FLAG_CHAININFO)) break;
+        rtf = (RUNTIME_FUNCTION *)
+              &(uinfo->UnwindCode[(uinfo->CountOfCodes+1) & ~1]);
+    }
+
+    if (rsp >= min_accessible && rsp <= max_accessible)
+    {
+        uregs->xip = *(Addr *)rsp;
+        uregs->xsp = rsp + sizeof(Addr);
+        return True;
+    }
+
+    return False;
+}
+#endif /* defined(VGA_amd64) */
+
+
+/*--------------------------------------------------------------*/
+/*---                                                        ---*/
+/*--- TOP LEVEL: FOR UNWINDING THE STACK USING               ---*/
 /*---            MSVC FPO INFO                               ---*/
 /*---                                                        ---*/
 /*--------------------------------------------------------------*/
