@@ -500,6 +500,8 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
 #if defined(VGP_amd64_linux) || defined(VGP_amd64_darwin) \
     || defined(VGP_amd64_solaris)
 
+static Bool MSVC_x64_info_present = True;
+
 UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
                                /*OUT*/Addr* ips, UInt max_n_ips,
                                /*OUT*/Addr* sps, /*OUT*/Addr* fps,
@@ -637,7 +639,8 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
       }
 
       /* And, similarly, try for MSVC x64 unwind info. */
-      if ( VG_(use_MSVC_x64_info)( &uregs, fp_min, fp_max ) ) {
+      if ( MSVC_x64_info_present
+           && VG_(use_MSVC_x64_info)( &uregs, fp_min, fp_max ) ) {
          if (0 == uregs.xip || 1 == uregs.xip) break;
          if (sps) sps[i] = uregs.xsp;
          if (fps) fps[i] = uregs.xbp;
