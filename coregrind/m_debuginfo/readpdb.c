@@ -94,7 +94,7 @@
 typedef  UInt   DWORD;
 typedef  UShort WORD;
 typedef  UChar  BYTE;
-
+typedef  ULong  ULONGLONG;
 
 /* the following DOS and WINDOWS structures, defines and PE/PDB
  * parsing code are copied or derived from the WINE
@@ -109,25 +109,25 @@ typedef  UChar  BYTE;
 
 #pragma pack(2)
 typedef struct _IMAGE_DOS_HEADER {
-    unsigned short  e_magic;      /* 00: MZ Header signature */
-    unsigned short  e_cblp;       /* 02: Bytes on last page of file */
-    unsigned short  e_cp;         /* 04: Pages in file */
-    unsigned short  e_crlc;       /* 06: Relocations */
-    unsigned short  e_cparhdr;    /* 08: Size of header in paragraphs */
-    unsigned short  e_minalloc;   /* 0a: Minimum extra paragraphs needed */
-    unsigned short  e_maxalloc;   /* 0c: Maximum extra paragraphs needed */
-    unsigned short  e_ss;         /* 0e: Initial (relative) SS value */
-    unsigned short  e_sp;         /* 10: Initial SP value */
-    unsigned short  e_csum;       /* 12: Checksum */
-    unsigned short  e_ip;         /* 14: Initial IP value */
-    unsigned short  e_cs;         /* 16: Initial (relative) CS value */
-    unsigned short  e_lfarlc;     /* 18: File address of relocation table */
-    unsigned short  e_ovno;       /* 1a: Overlay number */
-    unsigned short  e_res[4];     /* 1c: Reserved words */
-    unsigned short  e_oemid;      /* 24: OEM identifier (for e_oeminfo) */
-    unsigned short  e_oeminfo;    /* 26: OEM information; e_oemid specific */
-    unsigned short  e_res2[10];   /* 28: Reserved words */
-    unsigned long   e_lfanew;     /* 3c: Offset to extended header */
+    WORD  e_magic;      /* 00: MZ Header signature */
+    WORD  e_cblp;       /* 02: Bytes on last page of file */
+    WORD  e_cp;         /* 04: Pages in file */
+    WORD  e_crlc;       /* 06: Relocations */
+    WORD  e_cparhdr;    /* 08: Size of header in paragraphs */
+    WORD  e_minalloc;   /* 0a: Minimum extra paragraphs needed */
+    WORD  e_maxalloc;   /* 0c: Maximum extra paragraphs needed */
+    WORD  e_ss;         /* 0e: Initial (relative) SS value */
+    WORD  e_sp;         /* 10: Initial SP value */
+    WORD  e_csum;       /* 12: Checksum */
+    WORD  e_ip;         /* 14: Initial IP value */
+    WORD  e_cs;         /* 16: Initial (relative) CS value */
+    WORD  e_lfarlc;     /* 18: File address of relocation table */
+    WORD  e_ovno;       /* 1a: Overlay number */
+    WORD  e_res[4];     /* 1c: Reserved words */
+    WORD  e_oemid;      /* 24: OEM identifier (for e_oeminfo) */
+    WORD  e_oeminfo;    /* 26: OEM information; e_oemid specific */
+    WORD  e_res2[10];   /* 28: Reserved words */
+    DWORD e_lfanew;     /* 3c: Offset to extended header */
 } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
 
 #define IMAGE_DOS_SIGNATURE    0x5A4D     /* MZ   */
@@ -147,85 +147,136 @@ typedef struct _IMAGE_DOS_HEADER {
 #define IMAGE_SUBSYSTEM_POSIX_CUI   7
 
 typedef struct _IMAGE_FILE_HEADER {
-  unsigned short  Machine;
-  unsigned short  NumberOfSections;
-  unsigned long   TimeDateStamp;
-  unsigned long   PointerToSymbolTable;
-  unsigned long   NumberOfSymbols;
-  unsigned short  SizeOfOptionalHeader;
-  unsigned short  Characteristics;
+  WORD  Machine;
+  WORD  NumberOfSections;
+  DWORD TimeDateStamp;
+  DWORD PointerToSymbolTable;
+  DWORD NumberOfSymbols;
+  WORD  SizeOfOptionalHeader;
+  WORD  Characteristics;
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 
 typedef struct _IMAGE_DATA_DIRECTORY {
-  unsigned long VirtualAddress;
-  unsigned long Size;
+  DWORD VirtualAddress;
+  DWORD Size;
 } IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
+
+typedef struct _IMAGE_OPTIONAL_HEADER64 {
+  WORD  Magic; /* 0x20b */
+  BYTE  MajorLinkerVersion;
+  BYTE  MinorLinkerVersion;
+  DWORD SizeOfCode;
+  DWORD SizeOfInitializedData;
+  DWORD SizeOfUninitializedData;
+  DWORD AddressOfEntryPoint;
+  DWORD BaseOfCode;
+  ULONGLONG ImageBase;
+  DWORD SectionAlignment;
+  DWORD FileAlignment;
+  WORD  MajorOperatingSystemVersion;
+  WORD  MinorOperatingSystemVersion;
+  WORD  MajorImageVersion;
+  WORD  MinorImageVersion;
+  WORD  MajorSubsystemVersion;
+  WORD  MinorSubsystemVersion;
+  DWORD Win32VersionValue;
+  DWORD SizeOfImage;
+  DWORD SizeOfHeaders;
+  DWORD CheckSum;
+  WORD  Subsystem;
+  WORD  DllCharacteristics;
+  ULONGLONG SizeOfStackReserve;
+  ULONGLONG SizeOfStackCommit;
+  ULONGLONG SizeOfHeapReserve;
+  ULONGLONG SizeOfHeapCommit;
+  DWORD LoaderFlags;
+  DWORD NumberOfRvaAndSizes;
+  IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+} IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
+
+typedef struct _IMAGE_NT_HEADERS64 {
+  DWORD Signature;
+  IMAGE_FILE_HEADER FileHeader;
+  IMAGE_OPTIONAL_HEADER64 OptionalHeader;
+} IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;
 
 typedef struct _IMAGE_OPTIONAL_HEADER {
 
   /* Standard fields */
 
-  unsigned short Magic; /* 0x10b or 0x107 */ /* 0x00 */
-  unsigned char  MajorLinkerVersion;
-  unsigned char  MinorLinkerVersion;
-  unsigned long  SizeOfCode;
-  unsigned long  SizeOfInitializedData;
-  unsigned long  SizeOfUninitializedData;
-  unsigned long  AddressOfEntryPoint;        /* 0x10 */
-  unsigned long  BaseOfCode;
-  unsigned long  BaseOfData;
+  WORD   Magic; /* 0x10b or 0x107 */ /* 0x00 */
+  BYTE   MajorLinkerVersion;
+  BYTE   MinorLinkerVersion;
+  DWORD  SizeOfCode;
+  DWORD  SizeOfInitializedData;
+  DWORD  SizeOfUninitializedData;
+  DWORD  AddressOfEntryPoint;        /* 0x10 */
+  DWORD  BaseOfCode;
+  DWORD  BaseOfData;
 
   /* NT additional fields */
 
-  unsigned long ImageBase;
-  unsigned long SectionAlignment;            /* 0x20 */
-  unsigned long FileAlignment;
-  unsigned short MajorOperatingSystemVersion;
-  unsigned short MinorOperatingSystemVersion;
-  unsigned short MajorImageVersion;
-  unsigned short MinorImageVersion;
-  unsigned short MajorSubsystemVersion;      /* 0x30 */
-  unsigned short MinorSubsystemVersion;
-  unsigned long Win32VersionValue;
-  unsigned long SizeOfImage;
-  unsigned long SizeOfHeaders;
-  unsigned long CheckSum;                    /* 0x40 */
-  unsigned short Subsystem;
-  unsigned short DllCharacteristics;
-  unsigned long SizeOfStackReserve;
-  unsigned long SizeOfStackCommit;
-  unsigned long SizeOfHeapReserve;           /* 0x50 */
-  unsigned long SizeOfHeapCommit;
-  unsigned long LoaderFlags;
-  unsigned long NumberOfRvaAndSizes;
+  DWORD ImageBase;
+  DWORD SectionAlignment;            /* 0x20 */
+  DWORD FileAlignment;
+  WORD  MajorOperatingSystemVersion;
+  WORD  MinorOperatingSystemVersion;
+  WORD  MajorImageVersion;
+  WORD  MinorImageVersion;
+  WORD  MajorSubsystemVersion;      /* 0x30 */
+  WORD  MinorSubsystemVersion;
+  DWORD Win32VersionValue;
+  DWORD SizeOfImage;
+  DWORD SizeOfHeaders;
+  DWORD CheckSum;                    /* 0x40 */
+  WORD  Subsystem;
+  WORD  DllCharacteristics;
+  DWORD SizeOfStackReserve;
+  DWORD SizeOfStackCommit;
+  DWORD SizeOfHeapReserve;           /* 0x50 */
+  DWORD SizeOfHeapCommit;
+  DWORD LoaderFlags;
+  DWORD NumberOfRvaAndSizes;
   IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; /* 0x60 */
   /* 0xE0 */
-} IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;
+} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
 
 typedef struct _IMAGE_NT_HEADERS {
-  unsigned long Signature; /* "PE"\0\0 */       /* 0x00 */
+  DWORD Signature; /* "PE"\0\0 */       /* 0x00 */
   IMAGE_FILE_HEADER FileHeader;                 /* 0x04 */
-  IMAGE_OPTIONAL_HEADER OptionalHeader;         /* 0x18 */
-} IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;
+  IMAGE_OPTIONAL_HEADER32 OptionalHeader;         /* 0x18 */
+} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;
+
+#if defined(VGA_amd64)
+typedef IMAGE_NT_HEADERS64  IMAGE_NT_HEADERS;
+typedef PIMAGE_NT_HEADERS64 PIMAGE_NT_HEADERS;
+typedef IMAGE_OPTIONAL_HEADER64 IMAGE_OPTIONAL_HEADER;
+typedef PIMAGE_OPTIONAL_HEADER64 PIMAGE_OPTIONAL_HEADER;
+#else
+typedef IMAGE_NT_HEADERS32  IMAGE_NT_HEADERS;
+typedef PIMAGE_NT_HEADERS32 PIMAGE_NT_HEADERS;
+typedef IMAGE_OPTIONAL_HEADER32 IMAGE_OPTIONAL_HEADER;
+typedef PIMAGE_OPTIONAL_HEADER32 PIMAGE_OPTIONAL_HEADER;
+#endif
 
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
 typedef struct _IMAGE_SECTION_HEADER {
-  unsigned char Name[IMAGE_SIZEOF_SHORT_NAME];
+  BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
   union {
-    unsigned long PhysicalAddress;
-    unsigned long VirtualSize;
+    DWORD PhysicalAddress;
+    DWORD VirtualSize;
   } Misc;
-  unsigned long VirtualAddress;
-  unsigned long SizeOfRawData;
-  unsigned long PointerToRawData;
-  unsigned long PointerToRelocations;
-  unsigned long PointerToLinenumbers;
-  unsigned short NumberOfRelocations;
-  unsigned short NumberOfLinenumbers;
-  unsigned long Characteristics;
+  DWORD VirtualAddress;
+  DWORD SizeOfRawData;
+  DWORD PointerToRawData;
+  DWORD PointerToRelocations;
+  DWORD PointerToLinenumbers;
+  WORD  NumberOfRelocations;
+  WORD  NumberOfLinenumbers;
+  DWORD Characteristics;
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 
 #define	IMAGE_SIZEOF_SECTION_HEADER 40
@@ -282,6 +333,22 @@ typedef struct _IMAGE_SECTION_HEADER {
 #define IMAGE_SCN_MEM_READ			0x40000000
 #define IMAGE_SCN_MEM_WRITE			0x80000000
 
+#define IMAGE_DIRECTORY_ENTRY_EXPORT            0
+#define IMAGE_DIRECTORY_ENTRY_IMPORT            1
+#define IMAGE_DIRECTORY_ENTRY_RESOURCE          2
+#define IMAGE_DIRECTORY_ENTRY_EXCEPTION         3
+#define IMAGE_DIRECTORY_ENTRY_SECURITY          4
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC         5
+#define IMAGE_DIRECTORY_ENTRY_DEBUG             6
+#define IMAGE_DIRECTORY_ENTRY_COPYRIGHT         7
+#define IMAGE_DIRECTORY_ENTRY_GLOBALPTR         8
+#define IMAGE_DIRECTORY_ENTRY_TLS               9
+#define IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG       10
+#define IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT      11
+#define IMAGE_DIRECTORY_ENTRY_IAT               12  /* Import Address Table */
+#define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT      13
+#define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR    14
+
 #pragma pack()
 
 typedef struct _GUID  /* 16 bytes */
@@ -299,9 +366,8 @@ typedef struct _GUID  /* 16 bytes */
 #pragma pack(1)
 typedef struct _PDB_FILE
 {
-    unsigned long size;
-    unsigned long unknown;
-
+    DWORD size;
+    DWORD unknown;
 } PDB_FILE, *PPDB_FILE;
 
 // A .pdb file begins with a variable-length one-line text string
@@ -312,192 +378,180 @@ struct PDB_JG_HEADER
 {
     //char ident[40];  // "Microsoft C/C++ program database 2.00\r\n\032"
     //unsigned long  signature;  // "JG\0\0"
-    unsigned int   blocksize;  // 0x400 typical; also 0x800, 0x1000
-    unsigned short freelist;
-    unsigned short total_alloc;
+    DWORD    blocksize;  // 0x400 typical; also 0x800, 0x1000
+    WORD     freelist;
+    WORD     total_alloc;
     PDB_FILE toc;
-    unsigned short toc_block[ 1 ];
+    WORD     toc_block[ 1 ];
 };
 
 struct PDB_DS_HEADER
 {
     //char   signature[32];  // "Microsoft C/C++ MSF 7.00\r\n\032DS\0\0"
-    unsigned int  block_size;
-    unsigned int unknown1;
-    unsigned int num_pages;
-    unsigned int toc_size;
-    unsigned int unknown2;
-    unsigned int toc_page;
+    DWORD block_size;
+    DWORD unknown1;
+    DWORD num_pages;
+    DWORD toc_size;
+    DWORD unknown2;
+    DWORD toc_page;
 };
 
 struct PDB_JG_TOC
 {
-    unsigned int  nFiles;
+    DWORD    nFiles;
     PDB_FILE file[ 1 ];
-
 };
 
 struct PDB_DS_TOC
 {
-    unsigned int num_files;
-    unsigned int file_size[1];
+    DWORD num_files;
+    DWORD file_size[1];
 };
 
 struct PDB_JG_ROOT
 {
-    unsigned int  version;
-    unsigned int  TimeDateStamp;
-    unsigned int  age;
-    unsigned int  cbNames;
-    char names[ 1 ];
+    DWORD  version;
+    DWORD  TimeDateStamp;
+    DWORD  age;
+    DWORD  cbNames;
+    char   names[ 1 ];
 };
 
 struct PDB_DS_ROOT
 {
-    unsigned int version;
-    unsigned int TimeDateStamp;
-    unsigned int age;
-    GUID guid;
-    unsigned int cbNames;
-    char names[1];
+    DWORD version;
+    DWORD TimeDateStamp;
+    DWORD age;
+    GUID  guid;
+    DWORD cbNames;
+    char  names[1];
 };
 
 typedef struct _PDB_TYPES_OLD
 {
-    unsigned long  version;
-    unsigned short first_index;
-    unsigned short last_index;
-    unsigned long  type_size;
-    unsigned short file;
-    unsigned short pad;
-
+    DWORD   version;
+    WORD    first_index;
+    WORD    last_index;
+    DWORD   type_size;
+    WORD    file;
+    WORD    pad;
 } PDB_TYPES_OLD, *PPDB_TYPES_OLD;
 
 typedef struct _PDB_TYPES
 {
-    unsigned long  version;
-    unsigned long  type_offset;
-    unsigned long  first_index;
-    unsigned long  last_index;
-    unsigned long  type_size;
-    unsigned short file;
-    unsigned short pad;
-    unsigned long  hash_size;
-    unsigned long  hash_base;
-    unsigned long  hash_offset;
-    unsigned long  hash_len;
-    unsigned long  search_offset;
-    unsigned long  search_len;
-    unsigned long  unknown_offset;
-    unsigned long  unknown_len;
-
+    DWORD   version;
+    DWORD   type_offset;
+    DWORD   first_index;
+    DWORD   last_index;
+    DWORD   type_size;
+    WORD    file;
+    WORD    pad;
+    DWORD   hash_size;
+    DWORD   hash_base;
+    DWORD   hash_offset;
+    DWORD   hash_len;
+    DWORD   search_offset;
+    DWORD   search_len;
+    DWORD   unknown_offset;
+    DWORD   unknown_len;
 } PDB_TYPES, *PPDB_TYPES;
 
 typedef struct _PDB_SYMBOL_RANGE
 {
-    unsigned short segment;
-    unsigned short pad1;
-    unsigned long  offset;
-    unsigned long  size;
-    unsigned long  characteristics;
-    unsigned short index;
-    unsigned short pad2;
-
+    WORD    segment;
+    WORD    pad1;
+    DWORD   offset;
+    DWORD   size;
+    DWORD   characteristics;
+    WORD    index;
+    WORD    pad2;
 } PDB_SYMBOL_RANGE, *PPDB_SYMBOL_RANGE;
 
 typedef struct _PDB_SYMBOL_RANGE_EX
 {
-    unsigned short segment;
-    unsigned short pad1;
-    unsigned long  offset;
-    unsigned long  size;
-    unsigned long  characteristics;
-    unsigned short index;
-    unsigned short pad2;
-    unsigned long  timestamp;
-    unsigned long  unknown;
-
+    WORD    segment;
+    WORD    pad1;
+    DWORD   offset;
+    DWORD   size;
+    DWORD   characteristics;
+    WORD    index;
+    WORD    pad2;
+    DWORD   timestamp;
+    DWORD   unknown;
 } PDB_SYMBOL_RANGE_EX, *PPDB_SYMBOL_RANGE_EX;
 
 typedef struct _PDB_SYMBOL_FILE
 {
-    unsigned long  unknown1;
+    DWORD   unknown1;
     PDB_SYMBOL_RANGE range;
-    unsigned short flag;
-    unsigned short file;
-    unsigned long  symbol_size;
-    unsigned long  lineno_size;
-    unsigned long  unknown2;
-    unsigned long  nSrcFiles;
-    unsigned long  attribute;
-    char filename[ 1 ];
-
+    WORD    flag;
+    WORD    file;
+    DWORD   symbol_size;
+    DWORD   lineno_size;
+    DWORD   unknown2;
+    DWORD   nSrcFiles;
+    DWORD   attribute;
+    char    filename[ 1 ];
 } PDB_SYMBOL_FILE, *PPDB_SYMBOL_FILE;
 
 typedef struct _PDB_SYMBOL_FILE_EX
 {
-    unsigned long  unknown1;
+    DWORD   unknown1;
     PDB_SYMBOL_RANGE_EX range;
-    unsigned short flag;
-    unsigned short file;
-    unsigned long  symbol_size;
-    unsigned long  lineno_size;
-    unsigned long  unknown2;
-    unsigned long  nSrcFiles;
-    unsigned long  attribute;
-    unsigned long  reserved[ 2 ];
-    char filename[ 1 ];
-
+    WORD    flag;
+    WORD    file;
+    DWORD   symbol_size;
+    DWORD   lineno_size;
+    DWORD   unknown2;
+    DWORD   nSrcFiles;
+    DWORD   attribute;
+    DWORD   reserved[ 2 ];
+    char    filename[ 1 ];
 } PDB_SYMBOL_FILE_EX, *PPDB_SYMBOL_FILE_EX;
 
 typedef struct _PDB_SYMBOL_SOURCE
 {
-    unsigned short nModules;
-    unsigned short nSrcFiles;
-    unsigned short table[ 1 ];
-
+    WORD nModules;
+    WORD nSrcFiles;
+    WORD table[ 1 ];
 } PDB_SYMBOL_SOURCE, *PPDB_SYMBOL_SOURCE;
 
 typedef struct _PDB_SYMBOL_IMPORT
 {
-    unsigned long unknown1;
-    unsigned long unknown2;
-    unsigned long TimeDateStamp;
-    unsigned long nRequests;
-    char filename[ 1 ];
-
+    DWORD unknown1;
+    DWORD unknown2;
+    DWORD TimeDateStamp;
+    DWORD nRequests;
+    char  filename[ 1 ];
 } PDB_SYMBOL_IMPORT, *PPDB_SYMBOL_IMPORT;
 
 typedef struct _PDB_SYMBOLS_OLD
 {
-    unsigned short hash1_file;
-    unsigned short hash2_file;
-    unsigned short gsym_file;
-    unsigned short pad;
-    unsigned long  module_size;
-    unsigned long  offset_size;
-    unsigned long  hash_size;
-    unsigned long  srcmodule_size;
-
+    WORD hash1_file;
+    WORD hash2_file;
+    WORD gsym_file;
+    WORD pad;
+    DWORD  module_size;
+    DWORD  offset_size;
+    DWORD  hash_size;
+    DWORD  srcmodule_size;
 } PDB_SYMBOLS_OLD, *PPDB_SYMBOLS_OLD;
 
 typedef struct _PDB_SYMBOLS
 {
-    unsigned long  signature;
-    unsigned long  version;
-    unsigned long  unknown;
-    unsigned long  hash1_file;
-    unsigned long  hash2_file;
-    unsigned long  gsym_file;
-    unsigned long  module_size;
-    unsigned long  offset_size;
-    unsigned long  hash_size;
-    unsigned long  srcmodule_size;
-    unsigned long  pdbimport_size;
-    unsigned long  resvd[ 5 ];
-
+    DWORD  signature;
+    DWORD  version;
+    DWORD  unknown;
+    DWORD  hash1_file;
+    DWORD  hash2_file;
+    DWORD  gsym_file;
+    DWORD  module_size;
+    DWORD  offset_size;
+    DWORD  hash_size;
+    DWORD  srcmodule_size;
+    DWORD  pdbimport_size;
+    DWORD  resvd[ 5 ];
 } PDB_SYMBOLS, *PPDB_SYMBOLS;
-#pragma pack()
 
 /*========================================================================
  * Process CodeView symbol information.
@@ -863,6 +917,7 @@ union codeview_symbol
         unsigned short          segment;
     } ssearch_v1;
 };
+#pragma pack()
 
 #define S_COMPILAND_V1  0x0001
 #define S_REGISTER_V1   0x0002
@@ -1126,7 +1181,9 @@ void pdb_check_root_version_and_timestamp( const HChar* pdbname,
       case 19950814:
       case 19960307:      /* VC 5.0 */
       case 19970604:      /* VC 6.0 */
-      case 20000404:      /* VC 7.0  FIXME?? */
+      case 19990903:      /* VC 7.0 */
+      case 20000404:
+      case 20040203:      /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
@@ -1156,7 +1213,7 @@ static void pdb_convert_types_header( PDB_TYPES *types, char* image )
    VG_(memset)( types, 0, sizeof(PDB_TYPES) );
    if ( !image )
       return;
-   if ( *(unsigned long *)image < 19960000 ) {  /* FIXME: correct version? */
+   if ( *(DWORD *)image < 19960000 ) {  /* FIXME: correct version? */
       /* Old version of the types record header */
       PDB_TYPES_OLD *old = (PDB_TYPES_OLD *)image;
       types->version     = old->version;
@@ -1178,7 +1235,7 @@ static void pdb_convert_symbols_header( PDB_SYMBOLS *symbols,
    VG_(memset)( symbols, 0, sizeof(PDB_SYMBOLS) );
    if ( !image )
       return;
-   if ( *(unsigned long *)image != 0xffffffff ) {
+   if ( *(DWORD*)image != 0xffffffff ) {
       /* Old version of the symbols record header */
       PDB_SYMBOLS_OLD *old     = (PDB_SYMBOLS_OLD *)image;
       symbols->version         = 0;
@@ -1312,39 +1369,40 @@ static ULong DEBUG_SnarfCodeView(
          break;
       }
       case S_PUB_V3:
-      /* not completely sure of those two anyway */
-      case S_PUB_FUNC1_V3:
-      case S_PUB_FUNC2_V3: {
-         Int k = sym->public_v3.len - (-1+ sizeof(sym->public_v3));
+      {
+         Int k = VG_(strlen)(sym->public_v3.name);
          if ((-1+ sizeof(symname)) < k)
             k = -1+ sizeof(symname);
          VG_(memcpy)(symname, sym->public_v3.name, k);
          symname[k] = '\0';
 
          if (debug)
-            VG_(umsg)("  S_PUB_FUNC1_V3/S_PUB_FUNC2_V3/S_PUB_V3 %s\n",
-                      symname );
+            VG_(umsg)("  S_PUB_V3 %s\n", symname );
 
-         if (1  /*sym->generic.id==S_PUB_FUNC1_V3 
-                  || sym->generic.id==S_PUB_FUNC2_V3*/) {
-            nmstr = ML_(addStr)(di, symname, k);
-            vsym.avmas.main = bias + sectp[sym->public_v3.segment-1].VirtualAddress
-                                  + sym->public_v3.offset;
-            SET_TOCPTR_AVMA(vsym.avmas, 0);
-            vsym.pri_name  = nmstr;
-            vsym.sec_names = NULL;
-            vsym.size      = 4000;
-                             // FIXME: public_v3.len is not length of the
-                             // .text of the function
-            vsym.isText    = !!(IMAGE_SCN_CNT_CODE
-                                & sectp[sym->data_v2.segment-1].Characteristics);
-            vsym.isIFunc   = False;
-            vsym.isGlobal  = True;
-            ML_(addSym)( di, &vsym );
-            n_syms_read++;
-         }
+         nmstr = ML_(addStr)(di, symname, k);
+         vsym.avmas.main = bias + sectp[sym->public_v3.segment-1].VirtualAddress
+                                + sym->public_v3.offset;
+         SET_TOCPTR_AVMA(vsym.avmas, 0);
+         vsym.pri_name  = nmstr;
+         vsym.sec_names = NULL;
+         vsym.size      = 4000;
+                          // FIXME: public_v3.len is not length of the
+                          // .text of the function
+         vsym.isText    = !!(IMAGE_SCN_CNT_CODE
+                             & sectp[sym->public_v3.segment-1].Characteristics);
+         vsym.isIFunc   = False;
+         vsym.isGlobal  = True;
+         ML_(addSym)( di, &vsym );
+         n_syms_read++;
          break;
       }
+
+      case S_PUB_FUNC1_V3:
+      case S_PUB_FUNC2_V3:
+         /* these are #if 0'd in Wine */
+         if (debug)
+            VG_(umsg)("  S_PUB_FUNC1_V3/S_PUB_FUNC2_V3 %s\n", symname );
+         break;
 
       /*
        * Sort of like a global function, but it just points
@@ -1651,11 +1709,12 @@ static ULong DEBUG_SnarfLinetab(
     return n_lines_read;
 }
 
-
+#define LT2_LINES_BLOCK     0x000000f2
+#define LT2_FILES_BLOCK     0x000000f4
 
 /* there's a new line tab structure from MS Studio 2005 and after
  * it's made of:
- * DWORD        000000f4
+ * DWORD        LT2_FILES_BLOCK
  * DWORD        lineblk_offset (counting bytes after this field)
  * an array of codeview_linetab2_file structures
  * an array (starting at <lineblk_offset>) of codeview_linetab2_block structures
@@ -1673,7 +1732,7 @@ typedef struct codeview_linetab2_file
 
 typedef struct codeview_linetab2_block
 {
-    DWORD       header;         /* 0x000000f2 */
+    DWORD       header;         /* LT2_LINES_BLOCK */
     DWORD       size_of_block;  /* next block is at # bytes after this field */
     DWORD       start;          /* start address of function with line numbers */
     DWORD       seg;            /* segment of function with line numbers */
@@ -1701,24 +1760,44 @@ static ULong codeview_dump_linetab2(
                 const HChar* pfx
              )
 {
-   DWORD       offset;
    unsigned    i;
    const codeview_linetab2_block* lbh;
    const codeview_linetab2_file* fd;
+   const char *files;
 
    Bool  debug = di->trace_symtab;
    ULong n_line2s_read = 0;
 
-   if (*(const DWORD*)linetab != 0x000000f4)
-      return 0;
-   offset = *((const DWORD*)linetab + 1);
-   lbh = (const codeview_linetab2_block*)(linetab + 8 + offset);
+   files = NULL;
+   lbh = (const codeview_linetab2_block*)(linetab);
+   while ((const HChar*)lbh < linetab + size) {
+      if (lbh->header == LT2_FILES_BLOCK)
+      {
+         files = (const char *)lbh;
+         break;
+      }
+      lbh = (const codeview_linetab2_block*)
+                ((const char*)lbh + 8 + lbh->size_of_block);
+   }
 
+   if (!files) {
+      if (debug)
+         VG_(printf)("No LT2_FILES_BLOCK found\n");
+      return 0;
+   }
+
+   lbh = (const codeview_linetab2_block*)linetab;
    while ((const HChar*)lbh < linetab + size) {
 
       UInt filedirname_ix;
       Addr svma_s, svma_e;
-      if (lbh->header != 0x000000f2) {
+      if (lbh->header == LT2_FILES_BLOCK) {
+         lbh = (const codeview_linetab2_block*)
+               ((const char*)lbh + 8 + lbh->size_of_block);
+         continue;
+      }
+
+      if (lbh->header != LT2_LINES_BLOCK) {
          /* FIXME: should also check that whole lbh fits in linetab + size */
          if (debug)
             VG_(printf)("%sblock end %x\n", pfx, lbh->header);
@@ -1728,7 +1807,7 @@ static ULong codeview_dump_linetab2(
          VG_(printf)("%sblock from %04x:%08x-%08x (size %u) (%u lines)\n",
                      pfx, lbh->seg, lbh->start, lbh->start + lbh->size - 1,
                      lbh->size, lbh->nlines);
-      fd = (const codeview_linetab2_file*)(linetab + 8 + lbh->file_offset);
+      fd = (const codeview_linetab2_file*)(files + 8 + lbh->file_offset);
       if (debug)
          VG_(printf)(
             "%s  md5=%02x%02x%02x%02x%02x%02x%02x%02x"
@@ -2040,7 +2119,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
          di->fpo[i].ulOffStart += pe_avma;
          // make sure the biasing didn't royally screw up, by wrapping
          // the range around the end of the address space
-         vg_assert(0xFFFFFFFF - di->fpo[i].ulOffStart /* "remaining space" */
+         vg_assert(~0ul - di->fpo[i].ulOffStart /* "remaining space" */
                    >= di->fpo[i].cbProcSize);
       }
 
@@ -2105,12 +2184,13 @@ static void pdb_dump( const struct pdb_reader* pdb,
       case 19950410:      /* VC 4.0 */
       case 19951122:
       case 19961031:      /* VC 5.0 / 6.0 */
-      case 20040203:      /* VC 7.0  FIXME??  */
+      case 19990903:      /* VC 7.0 */
+      case 20040203:      /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
             VG_(umsg)("LOAD_PDB_DEBUGINFO: "
-                      "Unknown .pdb type info version %lu\n", types.version );
+                      "Unknown .pdb type info version %u\n", types.version );
    }
 
    header_size = 0;
@@ -2119,12 +2199,13 @@ static void pdb_dump( const struct pdb_reader* pdb,
       case 0:            /* VC 4.0 */
       case 19960307:     /* VC 5.0 */
       case 19970606:     /* VC 6.0 */
-      case 19990903:     /* VC 7.0  FIXME?? */
+      case 19990903:     /* VC 7.0 */
+      case 20040203:     /* VC 8.0 */
          break;
       default:
          if (VG_(clo_verbosity) > 1)
             VG_(umsg)("LOAD_PDB_DEBUGINFO: "
-                      "Unknown .pdb symbol info version %lu\n",
+                      "Unknown .pdb symbol info version %u\n",
                       symbols.version );
    }
 
@@ -2181,7 +2262,7 @@ static void pdb_dump( const struct pdb_reader* pdb,
                                         file_name );
             n_syms_read 
                += DEBUG_SnarfCodeView( di, pe_avma, sectp_avma, modimage,
-                                           sizeof(unsigned long),
+                                           sizeof(DWORD),
                                            symbol_size );
          }
 
@@ -2270,6 +2351,8 @@ Bool ML_(read_pdb_debug_info)(
    IMAGE_NT_HEADERS*     ntheaders_avma;
    IMAGE_SECTION_HEADER* sectp_avma;
    IMAGE_SECTION_HEADER* pe_sechdr_avma;
+   IMAGE_OPTIONAL_HEADER* opthdr_avma;
+   IMAGE_DATA_DIRECTORY*  datadir;
 
    if (VG_(clo_verbosity) > 1)
        VG_(umsg)("LOAD_PDB_DEBUGINFO: Processing PDB file %s\n", pdbname );
@@ -2296,6 +2379,8 @@ Bool ML_(read_pdb_debug_info)(
            + ntheaders_avma->FileHeader.SizeOfOptionalHeader
         );
 
+   opthdr_avma = &ntheaders_avma->OptionalHeader;
+
    /* JRS: this seems like something of a hack. */
    di->soname = ML_(dinfo_strdup)("di.readpdb.rpdi.1", pdbname);
 
@@ -2319,7 +2404,7 @@ Bool ML_(read_pdb_debug_info)(
          VG_(memcpy)(name, pe_sechdr_avma->Name, 8);
          name[8] = '\0';
          VG_(umsg)("LOAD_PDB_DEBUGINFO:"
-                   "   Scanning PE section %ps at avma %#lx svma %#lx\n",
+                   "   Scanning PE section %ps at avma %#lx svma %#x\n",
                    name, obj_avma + pe_sechdr_avma->VirtualAddress,
                    pe_sechdr_avma->VirtualAddress);
       }
@@ -2445,6 +2530,15 @@ Bool ML_(read_pdb_debug_info)(
       if (root) {
          ML_(dinfo_free)( root );
       }
+      /* read RUNTIME_FUNCTION information for x64 */
+      /* i don't think this would apply to obsolete JG file format */
+      datadir = opthdr_avma->DataDirectory;
+      if (datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress)
+      {
+        di->rtf      = (RUNTIME_FUNCTION *)(obj_avma + datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress);
+        di->rtf_size = datadir[IMAGE_DIRECTORY_ENTRY_EXCEPTION].Size;
+        di->rtf_used = di->rtf_size / sizeof(*di->rtf);
+      }
    }
    else
    if (0==VG_(strncmp)((char const *)&signature, "JG\0\0", 4)) {
@@ -2467,6 +2561,9 @@ Bool ML_(read_pdb_debug_info)(
                    "acquired info ------\n");
       /* prepare read data for use */
       ML_(canonicaliseTables)( di );
+
+      di->first_epoch = VG_(current_DiEpoch)();
+
       /* notify m_redir about it */
       TRACE_SYMTAB("\n------ Notifying m_redir ------\n");
       VG_(redir_notify_new_DebugInfo)( di );

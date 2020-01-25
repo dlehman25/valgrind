@@ -163,6 +163,13 @@ extern Bool VG_(use_FPO_info) ( /*MOD*/Addr* ipP,
                                 Addr min_accessible,
                                 Addr max_accessible );
 
+#if defined(VGA_amd64)
+/* Use MSVC x64 data to do one step of stack unwinding. */
+extern Bool VG_(use_MSVC_x64_info) ( /*MOD*/D3UnwindRegs* uregs,
+                                     Addr min_accessible,
+                                     Addr max_accessible );
+#endif
+
 /* Print the unwind info (if there is some) for the given address
    range [from,to]. */
 extern void VG_(ppUnwindInfo) (Addr from, Addr to);

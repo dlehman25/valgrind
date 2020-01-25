@@ -501,6 +501,15 @@ typedef
 #define PDB_FRAME_TRAP 1
 #define PDB_FRAME_TSS  2
 
+typedef
+   struct _RUNTIME_FUNCTION
+   {
+      UInt /* DWORD */  BeginAddress;
+      UInt /* DWORD */  EndAddress;
+      UInt /* DWORD */  UnwindData;
+   }
+   RUNTIME_FUNCTION, *PRUNTIME_FUNCTION;
+
 /* --------------------- VARIABLES --------------------- */
 
 typedef
@@ -997,6 +1006,11 @@ struct _DebugInfo {
    Addr      fpo_minavma;
    Addr      fpo_maxavma;
    Addr      fpo_base_avma;
+
+   /* for x64 stack unwinding */
+   RUNTIME_FUNCTION *rtf;
+   UWord             rtf_used;
+   UWord             rtf_size;
 
    /* Pool of strings -- the string table.  Pointers
       into this are stable (the memory is not reallocated). */
